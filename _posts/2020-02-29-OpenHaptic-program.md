@@ -23,7 +23,8 @@ HDAPI必须通过HHD获取力反馈设备handle，在HLAPI中使用HHLRC _(hapti
 4. 运行scheduler  
 5. clean up!
 
-![](../img/OpenHaptic/HDAPI_program.PNG)
+![](../img/OpenHaptic/HDAPI_program.PNG)  
+## 初始化设备
 ```c
 HHD hHD = hdInitDevice(HD_DEFAULT_DEVICE); //部分设备需要手动矫正
 hdEnable(HD_FORCE_OUTPUT);  //使其可以输出力
@@ -47,6 +48,71 @@ HDCallbackCode HDCALLBACK DeviceStateCallback(void *pUserData)
     // execute this only once
     return HD_CALLBACK_DONE;
 }
+```
+
+Scheduler calls 分为两种同步和异步。同步调用只会在其完成时返回，所以主线程需要等待其调用返回，异步调用在执行时可以立即返回。  
+·Synchronous call:  
+```c
+// get the current position of end-effector
+DeviceDisplayState state;
+hdScheduleSynchronous(DeviceStateCallback,&state,HD_MIN_SCHEDULER_PRIORITY);
+```  
+·Asynchronous call: 
+```c
+hdScheduleAsynchronous(AForceSettingCallback,(void*)0,HD_DEFAULT_SCHEDULER_PRIORITY);
+```
+该函数返回一个handle，该句柄之后可以用于`hdUnschedule`和`blocking`等操作  
 
 
+## 获取状态
+使用`hdGet`系列函数
+```c
+HDint buttonState;
+HDstring vendor;
+hduVector3Dd position;
+HDfloat velocity[3];
+HDdouble transform[16];
+hdGetIntegerv(HD_CURRENT_BUTTONS,&buttonState);
+hdGetString(HD_DEVICE_VENDOR,vendor);
+hdGetDoublev(HD_CURRENT_POSITION,position);
+hdGetFloatv(HD_CURRENT_VELOCITY,velocity);
+hdGetDoublev(HD_LAST_ENDPOINT_TRANSFORM,transform);
+//和OpenGL十分相似
+```
+## 设置状态
+使用`hdSet`系列函数
+```c
+HDdouble force[3] = {0.5, 0.0, 1.0};
+hdSetDoublev(HD_CURRENT_FORCE,force);
+HDfloat rampRate = .5;
+hdSetFloatv(HD_FORCE_RAMPING_RATE,&rampRate);
+```
+
+## 校准
+1. 获取设备支持的校准方式  
+```c
+hdGetIntegerv(HD_CALIBRATION_STYLE, &supportedCalibrationStyles);
+```
+2. 定义校准回调函数  
+```c
+HDCallbackCode CalibrationStatusCallback(void *pUserData)
+{
+    HDenum *pStatus = (HDenum *) pUserData;
+    hdBeginFrame(hdGetCurrentDevice());
+    *pStatus = hdCheckCalibration();
+    hdEndFrame(hdGetCurrentDevice());
+    return HD_CALLBACK_DONE;
+}
+```
+
+
+## 坐标系
+![](../img/OpenHaptic/coordinate.PNG)
+
+
+## clean up!
+```c
+hdStopScheduler();
+hdUnschedule(scheduleCallbackHandle);
+hdDisableDevice(hdGetCurrentDevice());
 ```
