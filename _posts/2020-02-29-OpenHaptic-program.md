@@ -4,7 +4,7 @@ title:      OpenHaptic 编程教程
 subtitle:   力觉渲染教程
 date:       2020-02-29
 author:     infinityyf
-header-img: img/nvidia.jpg
+header-img: img/fig-device-coordinates.png
 catalog: true
 tags:
     - OpenHaptic
