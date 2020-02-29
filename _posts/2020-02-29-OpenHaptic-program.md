@@ -116,3 +116,6 @@ hdStopScheduler();
 hdUnschedule(scheduleCallbackHandle);
 hdDisableDevice(hdGetCurrentDevice());
 ```
+
+# 编程注意事项 
+1. 使用hdScheduleAsynchronous 时需要传入接受数据的地址，若传入NULL，就不要对pUserData进行操作
