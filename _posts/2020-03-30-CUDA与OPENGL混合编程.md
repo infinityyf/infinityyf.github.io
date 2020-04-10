@@ -61,7 +61,7 @@ cudaError_t cudaGraphicsMapResources (
 说明：
 ```c
 cudaError_t cudaGraphicsResourceGetMappedPointer( 
-  void** devPtr,  
+  void** devPtr,  //设备内存地址
   size_t* size,  
   cudaGraphicsResource_t resource//之前被map过
 ) 
